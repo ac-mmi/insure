@@ -3,6 +3,7 @@ from collections.abc import AsyncIterator
 
 from fastapi import FastAPI
 
+from app.api.errors import register_exception_handlers
 from app.api.router import api_router
 from app.core.config import settings
 from app.db.database import init_db
@@ -21,6 +22,7 @@ def create_app() -> FastAPI:
         debug=settings.debug,
         lifespan=lifespan,
     )
+    register_exception_handlers(application)
     application.include_router(api_router)
     return application
 
