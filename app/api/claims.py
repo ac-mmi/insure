@@ -6,13 +6,12 @@ from sqlalchemy.orm import Session, selectinload
 
 from app.db.database import get_db
 from app.models.claim import Claim
-from app.models.enums import ClaimStatus
 from app.schemas.claim import ClaimCreate, ClaimRead
 from app.schemas.dispute import DisputeCreate, DisputeRead
 from app.services.adjudication import adjudicate_claim
 from app.services.claims import create_claim, get_claim, pay_claim
 from app.services.dispute import create_dispute
-from app.services.exceptions import InvalidOperationError, NotFoundError
+from app.services.exceptions import NotFoundError
 
 router = APIRouter(prefix="/claims", tags=["claims"])
 
@@ -37,8 +36,7 @@ def submit_claim(data: ClaimCreate, db: Session = Depends(get_db)) -> Claim:
 
 @router.get("/{claim_id}", response_model=ClaimRead)
 def retrieve_claim(claim_id: uuid.UUID, db: Session = Depends(get_db)) -> Claim:
-    claim = get_claim(db, claim_id)
-    return claim
+    return get_claim(db, claim_id)
 
 
 @router.post("/{claim_id}/adjudicate", response_model=ClaimRead)
@@ -46,12 +44,6 @@ def adjudicate_claim_endpoint(
     claim_id: uuid.UUID, db: Session = Depends(get_db)
 ) -> Claim:
     claim = get_claim(db, claim_id)
-
-    if claim.status != ClaimStatus.SUBMITTED:
-        raise InvalidOperationError(
-            f"Only submitted claims can be adjudicated; current status is {claim.status.value}"
-        )
-
     adjudicate_claim(db, claim)
     db.commit()
     return get_claim(db, claim_id)

@@ -13,6 +13,7 @@ from app.models.coverage_rule import CoverageRule
 from app.models.enums import ClaimLineItemStatus, ClaimStatus
 from app.models.member import Member
 from app.models.policy import Policy
+from app.services.exceptions import StateConflictError
 
 NOT_COVERED_EXPLANATION = "Service not covered under policy"
 ANNUAL_LIMIT_EXPLANATION = "Annual benefit limit reached"
@@ -132,6 +133,11 @@ def _find_coverage_rule(
 
 
 def adjudicate_claim(db: Session, claim: Claim) -> Claim:
+    if claim.status != ClaimStatus.SUBMITTED:
+        raise StateConflictError(
+            f"Only submitted claims can be adjudicated; current status is {claim.status.value}"
+        )
+
     member = claim.member
     if member is None:
         member = db.get(Member, claim.member_id)

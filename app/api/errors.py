@@ -7,7 +7,7 @@ from pydantic import BaseModel
 
 from app.services.adjudication import AdjudicationError
 from app.services.dispute import DisputeError
-from app.services.exceptions import InvalidOperationError, NotFoundError
+from app.services.exceptions import InvalidOperationError, NotFoundError, StateConflictError
 
 
 class ErrorResponse(BaseModel):
@@ -28,6 +28,15 @@ def register_exception_handlers(app: FastAPI) -> None:
     ) -> JSONResponse:
         return JSONResponse(
             status_code=400,
+            content=ErrorResponse(detail=exc.message).model_dump(),
+        )
+
+    @app.exception_handler(StateConflictError)
+    async def state_conflict_handler(
+        _request: Request, exc: StateConflictError
+    ) -> JSONResponse:
+        return JSONResponse(
+            status_code=409,
             content=ErrorResponse(detail=exc.message).model_dump(),
         )
 

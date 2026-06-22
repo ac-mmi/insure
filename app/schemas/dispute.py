@@ -2,13 +2,21 @@ import uuid
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 from app.models.enums import DisputeStatus
 
 
 class DisputeCreate(BaseModel):
     reason: str = Field(min_length=1)
+
+    @field_validator("reason")
+    @classmethod
+    def reason_must_not_be_blank(cls, value: str) -> str:
+        stripped = value.strip()
+        if not stripped:
+            raise ValueError("Dispute reason is required")
+        return stripped
 
 
 class DisputeRead(BaseModel):

@@ -141,7 +141,7 @@ class TestClaimsAPI:
         db_session.commit()
 
         response = api_client.post(f"/claims/{claim.id}/pay")
-        assert response.status_code == 400
+        assert response.status_code == 409
 
 
 class TestDisputesAPI:
@@ -180,3 +180,27 @@ class TestDisputesAPI:
             json={"reason": ""},
         )
         assert response.status_code == 422
+
+    def test_create_dispute_rejects_whitespace_reason(
+        self, api_client: TestClient, seeded_member, db_session
+    ):
+        claim = create_claim(db_session, member=seeded_member, status=ClaimStatus.DENIED)
+        db_session.commit()
+
+        response = api_client.post(
+            f"/claims/{claim.id}/disputes",
+            json={"reason": "   "},
+        )
+        assert response.status_code == 422
+
+    def test_create_dispute_rejects_approved_claim(
+        self, api_client: TestClient, seeded_member, db_session
+    ):
+        claim = create_claim(db_session, member=seeded_member, status=ClaimStatus.APPROVED)
+        db_session.commit()
+
+        response = api_client.post(
+            f"/claims/{claim.id}/disputes",
+            json={"reason": "This should not be allowed."},
+        )
+        assert response.status_code == 409

@@ -6,6 +6,7 @@ import pytest
 from sqlalchemy.orm import Session
 from app.models.enums import ClaimStatus, DisputeStatus
 from app.services.dispute import DisputeError, create_dispute
+from app.services.exceptions import StateConflictError
 from tests.fixtures.domain import create_claim, create_line_item, create_member, create_policy
 
 
@@ -56,7 +57,7 @@ class TestDisputeCreation:
         member = create_member(db_session, policy=policy)
         claim = create_claim(db_session, member=member, status=ClaimStatus.APPROVED)
 
-        with pytest.raises(DisputeError, match="(?i)approved"):
+        with pytest.raises(StateConflictError, match="(?i)approved"):
             create_dispute(
                 db_session,
                 claim=claim,
@@ -68,7 +69,7 @@ class TestDisputeCreation:
         member = create_member(db_session, policy=policy)
         claim = create_claim(db_session, member=member, status=ClaimStatus.SUBMITTED)
 
-        with pytest.raises(DisputeError):
+        with pytest.raises(StateConflictError):
             create_dispute(
                 db_session,
                 claim=claim,
@@ -80,7 +81,7 @@ class TestDisputeCreation:
         member = create_member(db_session, policy=policy)
         claim = create_claim(db_session, member=member, status=ClaimStatus.PAID)
 
-        with pytest.raises(DisputeError):
+        with pytest.raises(StateConflictError):
             create_dispute(
                 db_session,
                 claim=claim,
@@ -94,3 +95,11 @@ class TestDisputeCreation:
 
         with pytest.raises(DisputeError, match="(?i)reason"):
             create_dispute(db_session, claim=claim, reason="")
+
+    def test_rejects_whitespace_only_dispute_reason(self, db_session: Session):
+        policy = create_policy(db_session)
+        member = create_member(db_session, policy=policy)
+        claim = create_claim(db_session, member=member, status=ClaimStatus.DENIED)
+
+        with pytest.raises(DisputeError, match="(?i)reason"):
+            create_dispute(db_session, claim=claim, reason="   ")

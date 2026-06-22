@@ -11,7 +11,7 @@ from app.models.claim_line_item import ClaimLineItem
 from app.models.enums import ClaimLineItemStatus, ClaimStatus
 from app.models.member import Member
 from app.schemas.claim import ClaimCreate
-from app.services.exceptions import InvalidOperationError, NotFoundError
+from app.services.exceptions import NotFoundError, StateConflictError
 
 PAYABLE_STATUSES = {ClaimStatus.APPROVED, ClaimStatus.PARTIALLY_APPROVED}
 
@@ -66,7 +66,7 @@ def pay_claim(db: Session, claim_id: uuid.UUID) -> Claim:
     claim = _load_claim(db, claim_id)
 
     if claim.status not in PAYABLE_STATUSES:
-        raise InvalidOperationError(
+        raise StateConflictError(
             f"Only approved or partially approved claims can be paid; "
             f"current status is {claim.status.value}"
         )
