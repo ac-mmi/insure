@@ -123,3 +123,15 @@ Controllers should orchestrate HTTP concerns (request parsing, commit, response 
 ## Summary
 
 This project optimizes for **clarity and explainability** over enterprise completeness. RPC-style endpoints match insurance workflows. Seed data keeps scope tight. Service-layer validation and `409` responses show awareness of production patterns without over-engineering a take-home.
+
+---
+
+## Related Documentation
+
+| Document | Contents |
+|----------|----------|
+| [README.md](../README.md) | Setup, walkthrough, tradeoffs |
+| [submission-summary.md](submission-summary.md) | Reviewer quick reference |
+| [self-review.md](self-review.md) | Honest strengths and weaknesses |
+| [domain-model.md](domain-model.md) | Entity spec and adjudication pipeline |
+| [api.md](api.md) | Endpoint reference |

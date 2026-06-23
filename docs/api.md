@@ -48,10 +48,10 @@ All errors return:
 
 | Status | When |
 |--------|------|
-| `400` | Invalid business input (e.g. adjudication failure) |
+| `400` | Business rule failure (e.g. adjudication error) |
 | `404` | Claim or member not found |
-| `409` | Invalid state transition (pay, adjudicate, dispute on wrong status) |
-| `422` | Request validation failed |
+| `409` | Invalid state transition (adjudicate, pay, or dispute on wrong status) |
+| `422` | Request validation failed (including whitespace-only dispute reason) |
 
 ---
 
